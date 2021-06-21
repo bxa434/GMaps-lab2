@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Application</title>
+    <style>
+        #map {
+            height: 100vh;
+            z-index: 4;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        img {
+            z-index: 5;
+        }
+
+        .weather__form {
+            position: absolute;
+            width: 225px;
+            top: 0;
+            left: 15%;
+            z-index: 99999;
+            background: white;
+            text-align: center;
+            color: black;
+            border-radius: 10%;
+            border: 1px solid black;
+            opacity: 0,6;
+            font-size: 16px;
+            padding: 4px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="map">
+
+</div>
+<div class="weather__form">
+    <div class="weather">
+        <h2>Погода в місті <span class="city"></span></h2>
+        <p>Погода: <span class="temp"></span>°C</p>
+        <p>Вологість: <span class="humidity"></span>%</p>
+        <p>Вітер: <span class="wind"></span> км/год</p>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBoRJ5y1qlya9zg71W4ycBAgnVGP7hDV7c&callback=initMap" async defer></script>
+
+<script>
+    let map;
+
+
+    const weatherAPI = "1b5ee5a1a74d624a74750350327ea372"
+
+    function handleAPI(data) {
+        numberMarkerImg = {
+            url: `http://openweathermap.org/img/w/${data.weather[0].icon}.png`,
+            size: new google.maps.Size(64, 64),
+            scaledSize: new google.maps.Size(64, 64),
+            anchor: new google.maps.Point(32, 32),
+        };
+        let marker = new google.maps.Marker({
+            alt: data.name,
+            position: {
+                lat: data.coord.lat,
+                lng: data.coord.lon
+            },
+            map: map,
+            icon: numberMarkerImg,
+            city: data.name,
+        }).addListener("mouseover", function(marker) {
+            console.log(marker)
+            axios.get(`https:api.openweathermap.org/data/2.5/weather?lat=${data.coord.lat}&lon=${data.coord.lon}&appid=${weatherAPI}`).then(res => {
+                document.querySelector('.city').innerHTML = res.data.name
+                document.querySelector('.temp').innerHTML = (res.data.main.temp - 273).toFixed(3)
+                document.querySelector('.humidity').innerHTML = res.data.main.humidity
+                document.querySelector('.wind').innerHTML = res.data.wind.speed
+            })
+        })
+
+
+    }
+    ["Kyiv", "Chernihiv", "Vinnytsia", "Chernihiv", "Cherkasy", "Chernivtsi", "Dnipropetrovsk", "Donetsk", "Ivano-Frankivsk", "Kharkiv", "Kherson", "Khmelnytskyi", "Kirovohrad", "Luhansk", "Mykolaiv", "Poltava", "Rivne", "Sumy", "Ternopil", "Vinnytsia", "Lutsk", "Uzhhorod", "Zaporizhia", "Zhytomyr"].forEach(city => {
+        $.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPI}`, handleAPI)
+    });
+
+
+    function initMap() {
+
+        myLatLng = {
+            lat: 50.27,
+            lng: 30.31
+        }
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {
+                lat: 50.27,
+                lng: 30.31
+            },
+            zoom: 7
+        });
+    };
+
+    $("#submit").on("click", function() {
+
+        axios.get(`https:api.openweathermap.org/data/2.5/weather?q=${$('#input').val()}&appid=${weatherAPI}`).then(res => {
+            document.querySelector('.city').innerHTML = res.data.name
+            document.querySelector('.temp').innerHTML = (res.data.main.temp - 273).toFixed(3)
+            document.querySelector('.humidity').innerHTML = res.data.main.humidity
+            document.querySelector('.wind').innerHTML = res.data.wind.speed
+            console.log(res)
+        })
+    })
+</script>
+
+
+</body>
+
+</html>
